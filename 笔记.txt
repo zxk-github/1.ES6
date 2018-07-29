@@ -1,0 +1,120 @@
+1.async/await
+async函数是generator函数的语法糖。使用关键字async来表示，在函数内部使用await来表示异步。相比于generator，asyn函数改进在下面四点：
+  内置执行器，generator函数的执行必须依靠执行器，而async函数自带执行器，调用方法和普通函数的调用方法一样
+  更好的语意化，async和await相比较*和yield更加语意化
+  更广的适用性，co模块约定，yield后面只能是thunk函数或者promise,而async函数和await命令后面可以是promise或者原始类型的值(Number, String, Boolean),但这时等同于同步操作
+  返回值是promise, async函数返回的是promise,比generator函数返回的iterator对象更加方便，可以直接使用then()方法进行调用
+
+
+function fetchUser() {
+  return new Promise((resolve, reject) => {
+    setTimeout(function() {
+      resolve({data: 1})
+    })
+  })
+}
+
+function getUserByPromise() {
+  fetchUser()
+  .then((data) => {
+    console.log(data);
+  })
+  .catch(error => {
+    console.log(error);
+  })
+}
+
+// getUserByPromise()
+
+// promise的方式虽然解决了callback hell，但是这种充满Promise的then(), 如果处理流程复杂的话，整段代码将充满then，语意化不明显，代码流程不能很好的表示执行流程
+
+function *getUserByGenerator() {
+  const user = yield fetchUser();
+  return user;
+}
+
+// const g = getUserByGenerator();
+// const result = g.next().value;
+// result.then((data) => {
+//   console.log(data)
+// })
+
+// generator的方式解决了promise的then()问题，流程更加直观、语意化，但是generator的问题在于，函数的执行需要依靠执行器，每次都需要通过g.next()的方式去进行
+
+// async 方式
+async function getUserByAsync() {
+  let user = await fetchUser();
+  return user; 
+}
+
+let u = getUserByAsync();
+u.then(data => {
+  console.log(data);
+})
+
+async完美的解决了上面两种方式的问题，流程清晰，直观，语意明显，操作异步流程就如同操作同步流程，同时async函数自带执行器，执行的时候无需手动加载
+
+语法
+async函数返回一个promise函数
+
+async函数内部return返回的值，会成为then方法回调函数的参数
+async function f() {
+  return 'hello world';
+}
+
+f().then((data) => {
+  console.log(data) //hello world
+})
+
+如果async函数出现异常，会导致promsie对象状态为reject状态，抛出错误而被catch方法回调函数接收到
+async function e(){
+    throw new Error('error');
+}
+e().then(v => console.log(v))
+.catch( e => console.log(e));
+
+async函数返回promise对象。必须等所有await命令执行完成，才会执行then方法的回调
+const delay = timeout => new Promise(resolve=> setTimeout(resolve, timeout));
+async function f(){
+    await delay(1000);
+    await delay(2000);
+    await delay(3000);
+    return 'done';
+}
+
+f().then(v => console.log(v)); // 等待6s后才输出 'done'
+
+正常情况下，await命令后面跟着的是Promise，如果不是的话，也会被转换成一个立即resolve的Promise
+async function f3() {
+  return await 3;
+}
+f3().then((data) => {
+  console.log(data)
+})
+
+async 函数的错误处理
+let a;
+async function f() {
+    await Promise.reject('error');
+    a = await 1; // 这段 await 并没有执行
+}
+f().then(v => console.log(a));
+如上面所示，当 async 函数中只要一个 await 出现 reject 状态，则后面的 await 都不会被执行。
+解决办法：可以添加 try/catch。
+
+// 正确的写法
+let a;
+async function correct() {
+    try {
+        await Promise.reject('error')
+    } catch (error) {
+        console.log(error);
+    }
+    a = await 1;
+    return a;
+}
+
+correct().then(v => console.log(a)); // 1
+
+如果有多个 await 则可以将其都放在 try/catch 中。
+

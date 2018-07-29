@@ -1,0 +1,23 @@
+{
+  "name": "1.es6",
+  "version": "1.0.0",
+  "description": "this is my es6 study , include ES6 book and ES6 video",
+  "main": "1.async.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zxk-github/1.ES6.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zxk-github/1.ES6/issues"
+  },
+  "homepage": "https://github.com/zxk-github/1.ES6#readme",
+  "dependencies": {
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
+  }
+}
